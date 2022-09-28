@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012, 2022, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -1004,14 +1004,20 @@ public interface Stream<T> extends BaseStream<T, Stream<T>> {
      * Performs a <a href="package-summary.html#Reduction">reduction</a> on the
      * elements of this stream, using the provided identity, accumulation and
      * combining functions.  This is equivalent to:
+     *
      * <pre>{@code
      *     U result = identity;
-     *     for (T element : this stream)
-     *         result = accumulator.apply(result, element)
+     *     for(Iterable<T> chunk : this stream in chunks) {
+     *         U chunkResult = identity;
+     *         for (T element : chunk)
+     *             chunkResult = accumulator.apply(chunkResult, element);
+     *         result = combiner.apply(result, chunkResult);
+     *     }
      *     return result;
      * }</pre>
      *
-     * but is not constrained to execute sequentially.
+     * In the case where there are less than two chunks, invoking the combiner is not needed
+     * as there is no merging to be done.
      *
      * <p>The {@code identity} value must be an identity for the combiner
      * function.  This means that for all {@code u}, {@code combiner(identity, u)}
